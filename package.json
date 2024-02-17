@@ -1,0 +1,27 @@
+{
+  "name": "dependency-staging",
+  "type": "module",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "index.js",
+  "author": "Zachary Eric Griffee",
+  "description": "Stage dependencies",
+  "homepage": "https://github.com/zacharygriffee/dependency-staging",
+  "scripts": {
+    "test": "node ./test.js",
+    "bundle": "node ./bundle.js",
+    "compile-docs": "node ./compile-docs.js"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "bring-your-own-storage-utilities": "^0.0.1321",
+    "brittle": "^3.4.0",
+    "jsdoc-to-markdown": "^8.0.1",
+    "localdrive": "^1.11.4",
+    "the-answer": "^1.0.0"
+  },
+  "dependencies": {
+    "simplified-awilix": "^0.2.2",
+    "awilix": "^10.0.1"
+  }
+}
