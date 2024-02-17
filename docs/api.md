@@ -26,7 +26,7 @@ A dependency container
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| id | <code>string</code> |  | A unique id of the stage. This changes every new application. |
+| id | <code>string</code> |  | A unique id of the dependency. This changes every new dependency. You can change this and any other property by defining resolver [addDependency](#Stage.addDependency) |
 | name | <code>string</code> |  | The name of the dependency. |
 | container | <code>container</code> |  | the [awilix container](https://github.com/zacharygriffee/simplified-awilix) of this dependency |
 | [optional] | <code>boolean</code> | <code>false</code> | Whether this dependency is optional. THis is a temporary property as I plan on flushing the 'optional' 'features' 'extensions' out a bit more. |
@@ -56,7 +56,7 @@ Install the single dependency without it becoming a dependency to a stage.
 **Example**  
 ```js
 // Overriding dependency validation with your own resolvers
-dependency.register({validator(module) { return !!module.followsTheRules; } });
+dependency.container.register({validator(module) { return !!module.followsTheRules; } });
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```
@@ -215,7 +215,7 @@ Install the single dependency without it becoming a dependency to a stage.
 **Example**  
 ```js
 // Overriding dependency validation with your own resolvers
-dependency.register({validator(module) { return !!module.followsTheRules; } });
+dependency.container.register({validator(module) { return !!module.followsTheRules; } });
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```

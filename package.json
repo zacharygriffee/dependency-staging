@@ -23,6 +23,6 @@
   },
   "dependencies": {
     "awilix": "^10.0.1",
-    "simplified-awilix": "^0.2.2"
+    "simplified-awilix": "^0.2.4"
   }
 }
