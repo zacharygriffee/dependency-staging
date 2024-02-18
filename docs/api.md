@@ -15,14 +15,6 @@ How to configure a container and its resolvers see: <a href="https://github.com/
 </dd>
 </dl>
 
-## Functions
-
-<dl>
-<dt><a href="#getDependency">getDependency(name, [asContainer])</a></dt>
-<dd><p>Get a dependency that was added via addDependency whether installed or not.</p>
-</dd>
-</dl>
-
 <a name="Dependency"></a>
 
 ## Dependency : <code>container</code>
@@ -102,6 +94,7 @@ the dependencies.
     * [.merge](#Stage.merge)
     * [.dispose](#Stage.dispose) ⇒
     * [.addDependency](#Stage.addDependency)
+    * [.getDependency](#Stage.getDependency)
     * [.install([validationRequired])](#Stage.install) ⇒ <code>function</code>
     * [.installDependency(name, [validationRequired])](#Stage.installDependency)
 
@@ -145,13 +138,25 @@ Add a dependency to be ready for installation.
 | [dependencyInterface] |  | The |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
+<a name="Stage.getDependency"></a>
+
+### Stage.getDependency
+Get a dependency that was added via addDependency whether installed or not.
+
+**Kind**: static property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
+| [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
+
 <a name="Stage.install"></a>
 
 ### Stage.install([validationRequired]) ⇒ <code>function</code>
 Install all dependencies that have not yet been installed. This returns an object with following signature:
 <pre>
 {
-     failedCount,     // How many failed ( both optional and non-optional failures )
+     failedCount,     // How many failed
      failed,          // Whether the installation failed. Failed optional
                       // dependencies will not cause the installation to fail
      resolved,        // All resolved dependencies
@@ -247,6 +252,7 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
     * [.merge](#Stage.merge)
     * [.dispose](#Stage.dispose) ⇒
     * [.addDependency](#Stage.addDependency)
+    * [.getDependency](#Stage.getDependency)
     * [.install([validationRequired])](#Stage.install) ⇒ <code>function</code>
     * [.installDependency(name, [validationRequired])](#Stage.installDependency)
 
@@ -290,13 +296,25 @@ Add a dependency to be ready for installation.
 | [dependencyInterface] |  | The |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
+<a name="Stage.getDependency"></a>
+
+### Stage.getDependency
+Get a dependency that was added via addDependency whether installed or not.
+
+**Kind**: static property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
+| [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
+
 <a name="Stage.install"></a>
 
 ### Stage.install([validationRequired]) ⇒ <code>function</code>
 Install all dependencies that have not yet been installed. This returns an object with following signature:
 <pre>
 {
-     failedCount,     // How many failed ( both optional and non-optional failures )
+     failedCount,     // How many failed
      failed,          // Whether the installation failed. Failed optional
                       // dependencies will not cause the installation to fail
      resolved,        // All resolved dependencies
@@ -321,16 +339,4 @@ Install a single dependency
 | --- | --- | --- | --- |
 | name | <code>string</code> |  | The name of the dependency used when adding it via Stage.addDependency |
 | [validationRequired] |  | <code>true</code> | If true, all dependencies must have a validator that checks integrity |
-
-<a name="getDependency"></a>
-
-## getDependency(name, [asContainer])
-Get a dependency that was added via addDependency whether installed or not.
-
-**Kind**: global function  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
-| [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
 
