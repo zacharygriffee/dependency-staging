@@ -15,6 +15,14 @@ How to configure a container and its resolvers see: <a href="https://github.com/
 </dd>
 </dl>
 
+## Functions
+
+<dl>
+<dt><a href="#getDependency">getDependency(name, [asContainer])</a></dt>
+<dd><p>Get a dependency that was added via addDependency whether installed or not.</p>
+</dd>
+</dl>
+
 <a name="Dependency"></a>
 
 ## Dependency : <code>container</code>
@@ -313,4 +321,16 @@ Install a single dependency
 | --- | --- | --- | --- |
 | name | <code>string</code> |  | The name of the dependency used when adding it via Stage.addDependency |
 | [validationRequired] |  | <code>true</code> | If true, all dependencies must have a validator that checks integrity |
+
+<a name="getDependency"></a>
+
+## getDependency(name, [asContainer])
+Get a dependency that was added via addDependency whether installed or not.
+
+**Kind**: global function  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
+| [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
 
