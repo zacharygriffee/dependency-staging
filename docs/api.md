@@ -26,7 +26,7 @@ A dependency container
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| id | <code>string</code> |  | A unique id of the dependency. This changes every new dependency. You can change this and any other property by defining resolver [addDependency](#Stage.addDependency) |
+| id | <code>string</code> |  | A unique id of the dependency. This changes every new dependency. You can change this and any other property by defining resolver [Stage.addDependency](Stage.addDependency) |
 | name | <code>string</code> |  | The name of the dependency. |
 | container | <code>container</code> |  | the [awilix container](https://github.com/zacharygriffee/simplified-awilix) of this dependency |
 | [optional] | <code>boolean</code> | <code>false</code> | Whether this dependency is optional. THis is a temporary property as I plan on flushing the 'optional' 'features' 'extensions' out a bit more. |
@@ -38,15 +38,15 @@ A dependency container
 
 
 * [Dependency](#Dependency) : <code>container</code>
-    * [.install](#Dependency.install) ⇒
-    * [.dispose](#Dependency.dispose)
+    * [.install](#Dependency+install) ⇒
+    * [.dispose](#Dependency+dispose)
 
-<a name="Dependency.install"></a>
+<a name="Dependency+install"></a>
 
-### Dependency.install ⇒
+### dependency.install ⇒
 Install the single dependency without it becoming a dependency to a stage.
 
-**Kind**: static method of [<code>Dependency</code>](#Dependency)  
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 **Returns**: Dependency  
 
 | Param | Default | Description |
@@ -60,13 +60,13 @@ dependency.container.register({validator(module) { return !!module.followsTheRul
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```
-<a name="Dependency.dispose"></a>
+<a name="Dependency+dispose"></a>
 
-### Dependency.dispose
+### dependency.dispose
 Clear cached values of this dependency and reset it to pre-installation state. This will impact all
 stages that have this dependency.
 
-**Kind**: static property of [<code>Dependency</code>](#Dependency)  
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
 **Kindof**: method  
 <a name="Stage"></a>
 
@@ -90,69 +90,69 @@ the dependencies.
 
 
 * [Stage](#Stage) : [<code>Container</code>](#Container)
-    * [.fork](#Stage.fork)
-    * [.merge](#Stage.merge)
-    * [.dispose](#Stage.dispose) ⇒
-    * [.addDependency](#Stage.addDependency)
-    * [.getDependency](#Stage.getDependency)
-    * [.install([validationRequired])](#Stage.install) ⇒ <code>function</code>
-    * [.installDependency(name, [validationRequired])](#Stage.installDependency)
+    * [.fork](#Stage+fork)
+    * [.merge](#Stage+merge)
+    * [.dispose](#Stage+dispose) ⇒
+    * [.addDependency](#Stage+addDependency)
+    * [.getDependency](#Stage+getDependency)
+    * [.install([validationRequired])](#Stage+install) ⇒ <code>function</code>
+    * [.installDependency(name, [validationRequired])](#Stage+installDependency)
 
-<a name="Stage.fork"></a>
+<a name="Stage+fork"></a>
 
-### Stage.fork
+### stage.fork
 Create a forked stage of this one. It will attain the dependencies of the parent stage,
 and any new dependencies added and installed on the parent stage will be added to the forked stage automatically.
 Disposing a fork will only remove the cached values and dependencies of itself, and dependencies it used will not
 be disposed if other stages are using it.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
-<a name="Stage.merge"></a>
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+merge"></a>
 
-### Stage.merge
+### stage.merge
 Merge another stage into this one. All dependencies installed in the other stage,
 will become installed in this stage. Another stage being disposed will not dispose the dependencies in this stage.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | container | [<code>Stage</code>](#Stage) | the other stage to merge into this stage. |
 
-<a name="Stage.dispose"></a>
+<a name="Stage+dispose"></a>
 
-### Stage.dispose ⇒
+### stage.dispose ⇒
 An alias function for the container's dispose function.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
-<a name="Stage.addDependency"></a>
+<a name="Stage+addDependency"></a>
 
-### Stage.addDependency
+### stage.addDependency
 Add a dependency to be ready for installation.
 
-**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
 
 | Param | Default | Description |
 | --- | --- | --- |
 | [dependencyInterface] |  | The |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
-<a name="Stage.getDependency"></a>
+<a name="Stage+getDependency"></a>
 
-### Stage.getDependency
+### stage.getDependency
 Get a dependency that was added via addDependency whether installed or not.
 
-**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
 | [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
 
-<a name="Stage.install"></a>
+<a name="Stage+install"></a>
 
-### Stage.install([validationRequired]) ⇒ <code>function</code>
+### stage.install([validationRequired]) ⇒ <code>function</code>
 Install all dependencies that have not yet been installed. This returns an object with following signature:
 <pre>
 {
@@ -164,18 +164,18 @@ Install all dependencies that have not yet been installed. This returns an objec
 }
 </pre>
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Default | Description |
 | --- | --- | --- |
 | [validationRequired] | <code>Dependency.requireDependencyValidation</code> | Validation required for all dependencies installed. |
 
-<a name="Stage.installDependency"></a>
+<a name="Stage+installDependency"></a>
 
-### Stage.installDependency(name, [validationRequired])
+### stage.installDependency(name, [validationRequired])
 Install a single dependency
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -210,15 +210,15 @@ A Container that resolves and contains dependency.
 **Kind**: global namespace  
 
 * [Dependency](#Dependency) : <code>object</code>
-    * [.install](#Dependency.install) ⇒
-    * [.dispose](#Dependency.dispose)
+    * [.install](#Dependency+install) ⇒
+    * [.dispose](#Dependency+dispose)
 
-<a name="Dependency.install"></a>
+<a name="Dependency+install"></a>
 
-### Dependency.install ⇒
+### dependency.install ⇒
 Install the single dependency without it becoming a dependency to a stage.
 
-**Kind**: static method of [<code>Dependency</code>](#Dependency)  
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 **Returns**: Dependency  
 
 | Param | Default | Description |
@@ -232,13 +232,13 @@ dependency.container.register({validator(module) { return !!module.followsTheRul
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```
-<a name="Dependency.dispose"></a>
+<a name="Dependency+dispose"></a>
 
-### Dependency.dispose
+### dependency.dispose
 Clear cached values of this dependency and reset it to pre-installation state. This will impact all
 stages that have this dependency.
 
-**Kind**: static property of [<code>Dependency</code>](#Dependency)  
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
 **Kindof**: method  
 <a name="Stage"></a>
 
@@ -248,69 +248,69 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
 **Kind**: global namespace  
 
 * [Stage](#Stage) : <code>object</code>
-    * [.fork](#Stage.fork)
-    * [.merge](#Stage.merge)
-    * [.dispose](#Stage.dispose) ⇒
-    * [.addDependency](#Stage.addDependency)
-    * [.getDependency](#Stage.getDependency)
-    * [.install([validationRequired])](#Stage.install) ⇒ <code>function</code>
-    * [.installDependency(name, [validationRequired])](#Stage.installDependency)
+    * [.fork](#Stage+fork)
+    * [.merge](#Stage+merge)
+    * [.dispose](#Stage+dispose) ⇒
+    * [.addDependency](#Stage+addDependency)
+    * [.getDependency](#Stage+getDependency)
+    * [.install([validationRequired])](#Stage+install) ⇒ <code>function</code>
+    * [.installDependency(name, [validationRequired])](#Stage+installDependency)
 
-<a name="Stage.fork"></a>
+<a name="Stage+fork"></a>
 
-### Stage.fork
+### stage.fork
 Create a forked stage of this one. It will attain the dependencies of the parent stage,
 and any new dependencies added and installed on the parent stage will be added to the forked stage automatically.
 Disposing a fork will only remove the cached values and dependencies of itself, and dependencies it used will not
 be disposed if other stages are using it.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
-<a name="Stage.merge"></a>
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+merge"></a>
 
-### Stage.merge
+### stage.merge
 Merge another stage into this one. All dependencies installed in the other stage,
 will become installed in this stage. Another stage being disposed will not dispose the dependencies in this stage.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | container | [<code>Stage</code>](#Stage) | the other stage to merge into this stage. |
 
-<a name="Stage.dispose"></a>
+<a name="Stage+dispose"></a>
 
-### Stage.dispose ⇒
+### stage.dispose ⇒
 An alias function for the container's dispose function.
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
-<a name="Stage.addDependency"></a>
+<a name="Stage+addDependency"></a>
 
-### Stage.addDependency
+### stage.addDependency
 Add a dependency to be ready for installation.
 
-**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
 
 | Param | Default | Description |
 | --- | --- | --- |
 | [dependencyInterface] |  | The |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
-<a name="Stage.getDependency"></a>
+<a name="Stage+getDependency"></a>
 
-### Stage.getDependency
+### stage.getDependency
 Get a dependency that was added via addDependency whether installed or not.
 
-**Kind**: static property of [<code>Stage</code>](#Stage)  
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
 | [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
 
-<a name="Stage.install"></a>
+<a name="Stage+install"></a>
 
-### Stage.install([validationRequired]) ⇒ <code>function</code>
+### stage.install([validationRequired]) ⇒ <code>function</code>
 Install all dependencies that have not yet been installed. This returns an object with following signature:
 <pre>
 {
@@ -322,18 +322,18 @@ Install all dependencies that have not yet been installed. This returns an objec
 }
 </pre>
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Default | Description |
 | --- | --- | --- |
 | [validationRequired] | <code>Dependency.requireDependencyValidation</code> | Validation required for all dependencies installed. |
 
-<a name="Stage.installDependency"></a>
+<a name="Stage+installDependency"></a>
 
-### Stage.installDependency(name, [validationRequired])
+### stage.installDependency(name, [validationRequired])
 Install a single dependency
 
-**Kind**: static method of [<code>Stage</code>](#Stage)  
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
