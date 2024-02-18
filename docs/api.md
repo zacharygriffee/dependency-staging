@@ -39,6 +39,8 @@ A dependency container
 
 * [Dependency](#Dependency) : <code>container</code>
     * [.install](#Dependency+install) ⇒
+    * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
+    * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
 
 <a name="Dependency+install"></a>
@@ -60,6 +62,24 @@ dependency.container.register({validator(module) { return !!module.followsTheRul
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```
+<a name="Dependency+isSerializable"></a>
+
+### dependency.isSerializable ⇒ <code>boolean</code> \| <code>undefined</code>
+Whether the dependency is serializable. For now, it checks if code or uri exists and whether it
+can be serialized judged by structuredClone algorithm.
+Because the resolvers for code and uri does not necessarily have to be serializable.
+This checker requires that code or uri is declared on the container, if not, it will return undefined rather than
+false
+
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
+**Returns**: <code>boolean</code> \| <code>undefined</code> - true or falsy  
+<a name="Dependency+snapshot"></a>
+
+### dependency.snapshot
+Create a serializable javascript object of the dependency if the dependency is serializable, see
+[Dependency.isSerializable](Dependency.isSerializable)
+
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+dispose"></a>
 
 ### dependency.dispose
@@ -91,7 +111,9 @@ the dependencies.
 
 * [Stage](#Stage) : [<code>Container</code>](#Container)
     * [.fork](#Stage+fork)
+    * [.isSerializable](#Stage+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.merge](#Stage+merge)
+    * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.dispose](#Stage+dispose) ⇒
     * [.addDependency](#Stage+addDependency)
     * [.getDependency](#Stage+getDependency)
@@ -107,6 +129,14 @@ Disposing a fork will only remove the cached values and dependencies of itself, 
 be disposed if other stages are using it.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+isSerializable"></a>
+
+### stage.isSerializable ⇒ <code>boolean</code> \| <code>undefined</code>
+Whether ALL direct dependencies of the stage (not forks) is serializable and a snapshot can be created from it.
+See [Stage.snapshot](Stage.snapshot) and [Dependency.isSerializable](Dependency.isSerializable)
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+**Returns**: <code>boolean</code> \| <code>undefined</code> - true or falsy  
 <a name="Stage+merge"></a>
 
 ### stage.merge
@@ -119,6 +149,12 @@ will become installed in this stage. Another stage being disposed will not dispo
 | --- | --- | --- |
 | container | [<code>Stage</code>](#Stage) | the other stage to merge into this stage. |
 
+<a name="Stage+snapshot"></a>
+
+### stage.snapshot ⇒ <code>object</code>
+Create snapshot of the dependencies the stage directly handles (not forks).
+
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+dispose"></a>
 
 ### stage.dispose ⇒
@@ -211,6 +247,8 @@ A Container that resolves and contains dependency.
 
 * [Dependency](#Dependency) : <code>object</code>
     * [.install](#Dependency+install) ⇒
+    * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
+    * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
 
 <a name="Dependency+install"></a>
@@ -232,6 +270,24 @@ dependency.container.register({validator(module) { return !!module.followsTheRul
 // Note: There should many mechanisms at play to ensure that the dependency is safe to run
 // beyond the validator.
 ```
+<a name="Dependency+isSerializable"></a>
+
+### dependency.isSerializable ⇒ <code>boolean</code> \| <code>undefined</code>
+Whether the dependency is serializable. For now, it checks if code or uri exists and whether it
+can be serialized judged by structuredClone algorithm.
+Because the resolvers for code and uri does not necessarily have to be serializable.
+This checker requires that code or uri is declared on the container, if not, it will return undefined rather than
+false
+
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
+**Returns**: <code>boolean</code> \| <code>undefined</code> - true or falsy  
+<a name="Dependency+snapshot"></a>
+
+### dependency.snapshot
+Create a serializable javascript object of the dependency if the dependency is serializable, see
+[Dependency.isSerializable](Dependency.isSerializable)
+
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+dispose"></a>
 
 ### dependency.dispose
@@ -249,7 +305,9 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
 
 * [Stage](#Stage) : <code>object</code>
     * [.fork](#Stage+fork)
+    * [.isSerializable](#Stage+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.merge](#Stage+merge)
+    * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.dispose](#Stage+dispose) ⇒
     * [.addDependency](#Stage+addDependency)
     * [.getDependency](#Stage+getDependency)
@@ -265,6 +323,14 @@ Disposing a fork will only remove the cached values and dependencies of itself, 
 be disposed if other stages are using it.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+isSerializable"></a>
+
+### stage.isSerializable ⇒ <code>boolean</code> \| <code>undefined</code>
+Whether ALL direct dependencies of the stage (not forks) is serializable and a snapshot can be created from it.
+See [Stage.snapshot](Stage.snapshot) and [Dependency.isSerializable](Dependency.isSerializable)
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+**Returns**: <code>boolean</code> \| <code>undefined</code> - true or falsy  
 <a name="Stage+merge"></a>
 
 ### stage.merge
@@ -277,6 +343,12 @@ will become installed in this stage. Another stage being disposed will not dispo
 | --- | --- | --- |
 | container | [<code>Stage</code>](#Stage) | the other stage to merge into this stage. |
 
+<a name="Stage+snapshot"></a>
+
+### stage.snapshot ⇒ <code>object</code>
+Create snapshot of the dependencies the stage directly handles (not forks).
+
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+dispose"></a>
 
 ### stage.dispose ⇒

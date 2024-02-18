@@ -8,10 +8,7 @@ import {stage as alien} from "./dist/index.min.js";
 
 test("Dependency tests #1", async t => {
     const forkedStage = stage.fork();
-    const alienStage = alien.fork();
 
-    alienStage.id;
-    forkedStage.id;
     {
         const t_adding = t.test("Adding dependencies");
         t_adding.plan(4);
@@ -214,7 +211,7 @@ test("Dependency forks, validation", async t => {
     t.absent(child1HotSauce, "Hot sauce is gone.");
 
     t.comment("Disposing parentFork");
-    t.alike(stage.forks, [parentFork], "Before disposing, stage.forks should have parent fork as its only entry.");
+    t.is(stage.forks.length + stage.forks[0].id, stage.forks.length + parentFork.id,  "Before disposing, stage.forks should have parent fork as its only entry.");
     await parentFork.container.dispose();
     t.alike(stage.forks, [], "At this point, root stage has no dependencies because parentFork was its only one.");
     t.absent(
@@ -237,6 +234,90 @@ test("Dependency forks, validation", async t => {
     t.ok(childFork2.getDependency(["chocolate", "hot-sauce"]).every(o => !o), "childFork2 was disposed so not dependencies anymore.");
     t.alike(parentFork.dependencies, {}, "At this point, the parentFork should have no dependencies.");
     t.alike(parentFork.forks, [], "At this point, the parentFork should have no forks.");
+});
+
+test("snapshot and isSerializable stage/dependency", async t => {
+    t.comment(`
+Serializable requires all dependencies to have a code or uri field to install module.
+This will change by the time beta comes, as I'll be adding features from my other libraries 
+like bring-your-own-storage-utilities to pack whatever source into a cache storage.
+
+Actual serializable capabilities is coming soon.
+`);
+
+    const forkedStage = stage.fork();
+
+    let funDependency = forkedStage.addDependency({
+        name: "fun",
+        code: "export default 'balloons'"
+    });
+
+    let chocolateDependency = forkedStage.addDependency({
+        name: "chocolate",
+        code: "export default 'with peanut butter'"
+    });
+
+    t.ok(forkedStage.isSerializable, "Checking on stage will check all dependencies.");
+    t.ok(funDependency.isSerializable, "Checking on dependency will only check this dependency.");
+    t.alike(
+        forkedStage.snapshot(),
+        {
+            fun: {
+                id: funDependency.id,
+                name: "fun",
+                code: "export default 'balloons'",
+                uri: undefined,
+                exports: [],
+                optional: false
+            },
+            chocolate: {
+                id: chocolateDependency.id,
+                name: "chocolate",
+                code: "export default 'with peanut butter'",
+                uri: undefined,
+                exports: [],
+                optional: false
+            }
+        },
+        "Object serialized."
+    );
+
+    funDependency = forkedStage.addDependency({
+        name: "fun",
+        code: undefined
+    });
+
+    t.absent(forkedStage.isSerializable, "Checking on stage will check all dependencies.");
+    t.absent(funDependency.isSerializable, "Checking on dependency will only check this dependency.");
+    t.exception(forkedStage.snapshot, "Cannot serialize a stage that has a non-serializable dependency.");
+
+    chocolateDependency = forkedStage.addDependency({
+        name: "chocolate",
+        code: "export default 'with marshmallow'",
+        module: () => () => "A non serializable module isn't included in serializable. But a code or URI still must be present."
+    });
+
+    await chocolateDependency.install(false);
+    t.ok(chocolateDependency.isSerializable);
+    const choco = chocolateDependency.snapshot();
+    t.alike(
+        choco,
+        {
+            id: chocolateDependency.id,
+            name: "chocolate",
+            code: "export default 'with marshmallow'",
+            uri: undefined,
+            exports: [],
+            optional: false
+        },
+        "Even after installation and the module is part of the chocolate dependency, it is still serializable" +
+        " and can create a snap shot from it.."
+    );
+
+    await forkedStage.dispose();
+    await funDependency.dispose();
+    await chocolateDependency.dispose();
+    await stage.dispose();
 });
 
 test("Alien vs Aircraft carrier (alien forks)", async t => {
