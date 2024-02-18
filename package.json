@@ -1,9 +1,10 @@
 {
   "name": "dependency-staging",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "MIT",
   "main": "index.js",
+  "browser": "dist/index.min.js",
   "author": "Zachary Eric Griffee",
   "description": "Stage dependencies",
   "homepage": "https://github.com/zacharygriffee/dependency-staging",
