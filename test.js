@@ -1,7 +1,6 @@
 import {test, solo, skip} from "brittle";
 import {pack, rollupFromJsdelivr, rollupVirtualPlugin} from "bring-your-own-storage-utilities/deploy";
 import theAnswer from "the-answer";
-import {fork} from "./lib/stage/fork.js";
 // Creates a singleton stage.
 import {stage} from "./index.js";
 // A trick to get an instance to test 'alien stages' from other libraries
@@ -38,12 +37,12 @@ test("Dependency tests #1", async t => {
         const t_install = t.test("Installing dependencies");
         t_install.plan(9);
 
-        const theAnswerBeforeInstallation = (forkedStage.dependencies)["the-answer"].cradle;
+        const theAnswerBeforeInstallation = forkedStage.getDependency("the-answer");
         t_install.absent(theAnswerBeforeInstallation.module, "dependencies are not installed until 'install' is called on the stage");
         t_install.is(theAnswerBeforeInstallation.code, "export default 42;", "code is set through addDependency.");
         await forkedStage.install(false);
-        const theAnswerAfterInstallation = (forkedStage.dependencies)["the-answer"].cradle;
-        t_install.is(theAnswerAfterInstallation.module, 42, "After installation occurs, the module exists.");
+        const theAnswerAfterInstallation = forkedStage.getDependency("the-answer");
+        t_install.is(theAnswerAfterInstallation.module, 42, `After installation occurs, the module exists.`);
         t_install.is(theAnswerAfterInstallation.code, "export default 42;", "code is set through addDependency.");
 
         t_install.exception(() =>
@@ -154,17 +153,28 @@ test("Dependency forks, validation", async t => {
         validator: true
     });
 
-    t.absent(parentDeps["chocolate"], "Dependencies (including installed ones) added to a fork does not add to the " +
-        "parent fork. Use parent.merge(child) to attain a child's or alien stage's deps.");
 
-    t.absent(parentDeps["barbeque"], "Dependencies (including installed ones) added to a fork does not add to the " +
-        "parent fork. Use parent.merge(child) to attain a child's or alien stage's deps.");
+    t.alike(
+        parentFork.getDependency([
+            "chocolate",
+            "barbeque"
+        ]),
+        [undefined, undefined],
+        "Dependencies (including installed ones) added to a fork does not add to the " +
+        "parent fork. Use parent.merge(child) to attain a child's or alien stage's deps."
+    );
 
-    t.is(child1Deps["chocolate"].cradle.code, "export default 'ice cream';", "Chocolate ice cream was added to child 1");
-    t.absent(child2Deps["chocolate"], "Chocolate ice cream was not added to child 2");
+    t.alike(
+        childFork1.getDependency(["chocolate", "barbeque"]).map(o => o?.code),
+        ["export default 'ice cream';", undefined],
+        "Chocolate ice cream was added to child 1, but not barbeque"
+    );
 
-    t.absent(child1Deps["barbeque"], "Spicy barbeque was not added to child 1");
-    t.is(child2Deps["barbeque"].cradle.code, "export default 'spicy barbeque';", "Spicy barbeque was added to child 2");
+    t.alike(
+        childFork2.getDependency(["chocolate", "barbeque"]).map(o => o?.code),
+        [undefined, "export default 'spicy barbeque';"],
+        "Spicy barbeque was added to child 2, but not chocolate ice cream"
+    );
 
     t.comment(`Adding dependency to parent, the forks will attain the parent dependency. UNLESS the child fork already has
     a dependency with the same name which allows for overriding down the tree`);
@@ -182,13 +192,19 @@ test("Dependency forks, validation", async t => {
     await childFork1.install();
     await childFork2.install();
 
-    t.is(child1Deps["onion rings"].cradle.module, "with spicy ranch", "child1 acquired parent dep addition.");
-    t.is(child2Deps["onion rings"].cradle.module, "with spicy ranch", "child2 acquired parent dep addition.");
-    t.is(child1Deps["chocolate"].cradle.module, "ice cream");
-    t.absent(parentDeps["chocolate"]?.cradle?.module, "installing forked stage will not install into the parent.");
+    t.ok(
+        [
+            childFork1.getDependency("onion rings"),
+            childFork2.getDependency("onion rings")
+        ].every(o => o.module === "with spicy ranch"),
+        "both childFork1 and childFork2 acquired parent dep addition."
+    );
+
+    t.is(childFork1.getDependency("chocolate").module, "ice cream");
+    t.absent(parentFork.getDependency("chocolate")?.module, "installing forked stage will not install into the parent.");
     t.comment("Disposing childFork1");
 
-    await childFork1.container.dispose();
+    await childFork1.dispose();
     const [childFork2FromParentForks, nothingMore] = parentFork.forks
 
     t.is(childFork2FromParentForks.id, childFork2.id, "Disposed dependency is removed from parent fork leaving only the child2 fork");
@@ -202,24 +218,23 @@ test("Dependency forks, validation", async t => {
     await parentFork.container.dispose();
     t.alike(stage.forks, [], "At this point, root stage has no dependencies because parentFork was its only one.");
     t.absent(
-        parentFork.dependencies["hot-sauce"]?.module &&
-        parentFork.dependencies["hot-sauce"]?.installed,
+        parentFork.getDependency("hot-sauce")?.module &&
+        parentFork.getDependency("hot-sauce")?.installed,
         "disposing of a parent does not dispose the forks.."
     );
 
-    t.absent(childFork1.dependencies["chocolate"], "childFork1 was disposed earlier and thus the chocolate dependency is gone.");
-    t.absent(childFork1.dependencies["hot-sauce"], `childFork1 Hot sauce is gone.`);
+    t.ok(childFork1.getDependency(["chocolate", "hot-sauce"]).every(o => !o), "childFork1 both chocolate and hot sauce is not installed because of earlier disposal.");
     t.comment("Disposing childFork1");
     await childFork1.container.dispose();
 
     t.absent(childFork1.dependencies["hot-sauce"], `childFork1 dispose clears it's own deps.`);
-    t.ok(childFork2.dependencies["barbeque"], "sibling childFork2 still has the dep barbeque.");
-    t.ok(childFork2.dependencies["hot-sauce"], "sibling childFork2 still has the dep it inherited from the now disposed parent fork.");
+
+    t.ok(childFork2.getDependency(["barbeque", "hot-sauce"]).every(o => !!o), "sibling childFork2 still has its dependencies.")
 
     t.comment("Disposing childFork2");
     await childFork2.container.dispose();
-    t.absent(childFork2.dependencies["barbeque"], "sibling childFork2 does not have the barbeque dep anymore.");
-    t.absent(childFork2.dependencies["hot-sauce"], "sibling childFork2 does not have the hot-sauce dep anymore.");
+
+    t.ok(childFork2.getDependency(["chocolate", "hot-sauce"]).every(o => !o), "childFork2 was disposed so not dependencies anymore.");
     t.alike(parentFork.dependencies, {}, "At this point, the parentFork should have no dependencies.");
     t.alike(parentFork.forks, [], "At this point, the parentFork should have no forks.");
 });
@@ -235,8 +250,10 @@ test("Alien vs Aircraft carrier (alien forks)", async t => {
 
     alien.merge(stage);
 
-    const aircraftCarrier = alien.dependencies["aircraft carrier"].cradle;
-    const motherShip =  alien.dependencies["mothership"].cradle;
+    const [
+        aircraftCarrier,
+        motherShip
+    ] = alien.getDependency(["aircraft carrier", "mothership"]);
 
     t.ok(aircraftCarrier.installed, "Dependencies installed on alien fork will be installed on the fork it was merged to.");
     const {module: {nuclear, rocket}} = aircraftCarrier;
