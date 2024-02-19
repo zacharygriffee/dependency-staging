@@ -34,7 +34,7 @@ A dependency container
 | [code] | <code>string</code> |  | The code of a module. When the dependency is installed, the code will be transformed into a data uri, imported, and validated. |
 | [uri] | <code>string</code> |  | A data uri of a module. |
 | [exports] | <code>array.&lt;string&gt;</code> |  | Export these export names from the module. If empty, will export all. |
-| validator | <code>function</code> |  | Validation of the dependency. |
+| valid | <code>boolean</code> |  | If this dependency succeeded it's validator. Validation occurs at the dependency installation. Otherwise, this will be false. If this dependency is installed with validationRequired=false either by stage.install, stage.installDependency, or dependency.install, this will be false. |
 
 
 * [Dependency](#Dependency) : <code>container</code>
@@ -42,6 +42,7 @@ A dependency container
     * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
+    * [.validator](#Dependency+validator) ⇒ <code>Promise.&lt;boolean&gt;</code>
 
 <a name="Dependency+install"></a>
 
@@ -77,7 +78,8 @@ false
 
 ### dependency.snapshot
 Create a serializable javascript object of the dependency if the dependency is serializable, see
-[Dependency.isSerializable](Dependency.isSerializable)
+[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.addDependency which allows you to save the
+state of the stage and reload it, or transfer the state of the stage over network.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+dispose"></a>
@@ -88,6 +90,30 @@ stages that have this dependency.
 
 **Kind**: instance property of [<code>Dependency</code>](#Dependency)  
 **Kindof**: method  
+<a name="Dependency+validator"></a>
+
+### dependency.validator ⇒ <code>Promise.&lt;boolean&gt;</code>
+The validator function or string is coerced into a string, and all registered
+properties and functions of this (Dependency) container will be its global context. It must return true, false, or throw.
+If it returns false or throws, the installation will fail for this dependency and if it is a non-optional dependency with
+no other sources (currently a wip), it will fail the stage installation. If you require multiple lines in a string based validator, surround
+the validator with curly braces and utilize a return statement e.g. <pre>validator: "{ if (module.isBad) { return false }; return true }"</pre>
+
+All the other properties of this container (i.e. code, uri, exports, container, etc) will be available EXCEPT the validator function and valid result.
+
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
+**Example**  
+```js
+// How to apply a validator to a dependency.
+dependency.container.register({
+    validator: "module.isCorrect === true"
+});
+stage.addDependency({
+    name: "someModule",
+    code: "export default 'some module stuff'",
+    validator: "module === 'some module stuff'"
+});
+```
 <a name="Stage"></a>
 
 ## Stage : [<code>Container</code>](#Container)
@@ -189,15 +215,19 @@ Get a dependency that was added via addDependency whether installed or not.
 <a name="Stage+install"></a>
 
 ### stage.install([validationRequired]) ⇒ <code>function</code>
-Install all dependencies that have not yet been installed. This returns an object with following signature:
+Install all dependencies that have not yet been installed. This returns the resolved dependencies.
+
+This should almost be error handled / caught as most dependency installation errors will be brought up here.
+If an installation fails without being caught, it will hang the process (browser/node) without notice for
+security purposes.
+
 <pre>
-{
-     failedCount,     // How many failed
-     failed,          // Whether the installation failed. Failed optional
-                      // dependencies will not cause the installation to fail
-     resolved,        // All resolved dependencies
-     rejected         // All rejected dependencies
-}
+Error potentials:
+ MultipleErrors
+ DependencyError,
+ InstallationError,                  // If installation fails because a non-optional dependency failed to install
+     - DependencyCouldNotBeInstalled,// A non-optional dependency failed to install
+     - DependencyCouldNotBeValidated,// A non-optional dependency failed its validation.
 </pre>
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
@@ -250,6 +280,7 @@ A Container that resolves and contains dependency.
     * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
+    * [.validator](#Dependency+validator) ⇒ <code>Promise.&lt;boolean&gt;</code>
 
 <a name="Dependency+install"></a>
 
@@ -285,7 +316,8 @@ false
 
 ### dependency.snapshot
 Create a serializable javascript object of the dependency if the dependency is serializable, see
-[Dependency.isSerializable](Dependency.isSerializable)
+[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.addDependency which allows you to save the
+state of the stage and reload it, or transfer the state of the stage over network.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+dispose"></a>
@@ -296,6 +328,30 @@ stages that have this dependency.
 
 **Kind**: instance property of [<code>Dependency</code>](#Dependency)  
 **Kindof**: method  
+<a name="Dependency+validator"></a>
+
+### dependency.validator ⇒ <code>Promise.&lt;boolean&gt;</code>
+The validator function or string is coerced into a string, and all registered
+properties and functions of this (Dependency) container will be its global context. It must return true, false, or throw.
+If it returns false or throws, the installation will fail for this dependency and if it is a non-optional dependency with
+no other sources (currently a wip), it will fail the stage installation. If you require multiple lines in a string based validator, surround
+the validator with curly braces and utilize a return statement e.g. <pre>validator: "{ if (module.isBad) { return false }; return true }"</pre>
+
+All the other properties of this container (i.e. code, uri, exports, container, etc) will be available EXCEPT the validator function and valid result.
+
+**Kind**: instance property of [<code>Dependency</code>](#Dependency)  
+**Example**  
+```js
+// How to apply a validator to a dependency.
+dependency.container.register({
+    validator: "module.isCorrect === true"
+});
+stage.addDependency({
+    name: "someModule",
+    code: "export default 'some module stuff'",
+    validator: "module === 'some module stuff'"
+});
+```
 <a name="Stage"></a>
 
 ## Stage : <code>object</code>
@@ -383,15 +439,19 @@ Get a dependency that was added via addDependency whether installed or not.
 <a name="Stage+install"></a>
 
 ### stage.install([validationRequired]) ⇒ <code>function</code>
-Install all dependencies that have not yet been installed. This returns an object with following signature:
+Install all dependencies that have not yet been installed. This returns the resolved dependencies.
+
+This should almost be error handled / caught as most dependency installation errors will be brought up here.
+If an installation fails without being caught, it will hang the process (browser/node) without notice for
+security purposes.
+
 <pre>
-{
-     failedCount,     // How many failed
-     failed,          // Whether the installation failed. Failed optional
-                      // dependencies will not cause the installation to fail
-     resolved,        // All resolved dependencies
-     rejected         // All rejected dependencies
-}
+Error potentials:
+ MultipleErrors
+ DependencyError,
+ InstallationError,                  // If installation fails because a non-optional dependency failed to install
+     - DependencyCouldNotBeInstalled,// A non-optional dependency failed to install
+     - DependencyCouldNotBeValidated,// A non-optional dependency failed its validation.
 </pre>
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
