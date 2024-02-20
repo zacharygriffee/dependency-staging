@@ -292,7 +292,7 @@ Actual serializable capabilities is coming soon.
     t.ok(funDependency.isSerializable, "Checking on dependency will only check this dependency.");
     const forkedStageSnapshot = forkedStage.snapshot();
     {
-        const {fun, chocolate} = forkedStageSnapshot;
+        const {dependencies: {fun, chocolate}} = forkedStageSnapshot;
         {
             const {
                 id,
@@ -407,7 +407,7 @@ Actual serializable capabilities is coming soon.
         validator: "module === 'shortcake'"
     });
 
-    const {strawberry} = otherForkedStage.snapshot();
+    const {dependencies: {strawberry}} = otherForkedStage.snapshot();
     t.is(strawberry.validator, "module === 'shortcake'", `Validator gets serialized with the snapshot. However, if a stage snapshot has a dependency 
     that doesn't have a validator and another that does, you have to install the snapshot without validation.`);
     const anotherForkedStage = stage.fork();
