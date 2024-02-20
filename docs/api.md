@@ -26,7 +26,7 @@ A dependency container
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
-| id | <code>string</code> |  | A unique id of the dependency. This changes every new dependency. You can change this and any other property by defining resolver [Stage.addDependency](Stage.addDependency) |
+| id | <code>string</code> |  | A unique id of the dependency. This changes every new dependency. You can change this and any other property by defining resolver [Stage.put](Stage.put) |
 | name | <code>string</code> |  | The name of the dependency. |
 | container | <code>container</code> |  | the [awilix container](https://github.com/zacharygriffee/simplified-awilix) of this dependency |
 | [optional] | <code>boolean</code> | <code>false</code> | Whether this dependency is optional. THis is a temporary property as I plan on flushing the 'optional' 'features' 'extensions' out a bit more. |
@@ -163,8 +163,10 @@ the dependencies.
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
-    * [.addDependency](#Stage+addDependency)
-    * [.getDependency](#Stage+getDependency)
+    * [.exists](#Stage+exists)
+    * [.get](#Stage+get)
+    * [.ifExists](#Stage+ifExists)
+    * [.put](#Stage+put)
     * [.install([validationRequired])](#Stage+install) ⇒ <code>function</code>
     * [.installDependency(name, [validationRequired])](#Stage+installDependency)
 
@@ -219,22 +221,21 @@ An alias function for the container's dispose function.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
-<a name="Stage+addDependency"></a>
+<a name="Stage+exists"></a>
 
-### stage.addDependency
-Add a dependency to be ready for installation.
+### stage.exists
+Check if a dependency exists.
 
 **Kind**: instance property of [<code>Stage</code>](#Stage)  
 
-| Param | Default | Description |
+| Param | Type | Description |
 | --- | --- | --- |
-| [dependencyInterface] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
-| [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
+| dependency | <code>string</code> \| <code>array.&lt;string&gt;</code> | The name of the dependency. If array of strings, will check each dependency in the list whether it exists |
 
-<a name="Stage+getDependency"></a>
+<a name="Stage+get"></a>
 
-### stage.getDependency
-Get a dependency that was added via addDependency whether installed or not.
+### stage.get
+Get a dependency that was added via Stage.put whether installed or not.
 
 **Kind**: instance property of [<code>Stage</code>](#Stage)  
 
@@ -242,6 +243,32 @@ Get a dependency that was added via addDependency whether installed or not.
 | --- | --- | --- | --- |
 | name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
 | [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
+
+<a name="Stage+ifExists"></a>
+
+### stage.ifExists
+If a dependency or dependencies exists, the callback will be called.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> | An array or string of dependencies to call the callback with if they all exist. |
+| cb | <code>function</code> | The first argument of the callback will be the cradle of the dependency, and the second argument will be the stage's cradle. |
+
+<a name="Stage+put"></a>
+
+### stage.put
+Put a dependency to be ready for installation.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Default | Description |
+| --- | --- | --- |
+| [_name] |  | Name of the dependency or just pass the dependency structure here with name part of the interface. |
+| [dependency] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
+| [config] |  | Configuration for the put operation |
+| [config.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
 <a name="Stage+install"></a>
 
@@ -417,8 +444,10 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
-    * [.addDependency](#Stage+addDependency)
-    * [.getDependency](#Stage+getDependency)
+    * [.exists](#Stage+exists)
+    * [.get](#Stage+get)
+    * [.ifExists](#Stage+ifExists)
+    * [.put](#Stage+put)
     * [.install([validationRequired])](#Stage+install) ⇒ <code>function</code>
     * [.installDependency(name, [validationRequired])](#Stage+installDependency)
 
@@ -473,22 +502,21 @@ An alias function for the container's dispose function.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
-<a name="Stage+addDependency"></a>
+<a name="Stage+exists"></a>
 
-### stage.addDependency
-Add a dependency to be ready for installation.
+### stage.exists
+Check if a dependency exists.
 
 **Kind**: instance property of [<code>Stage</code>](#Stage)  
 
-| Param | Default | Description |
+| Param | Type | Description |
 | --- | --- | --- |
-| [dependencyInterface] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
-| [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
+| dependency | <code>string</code> \| <code>array.&lt;string&gt;</code> | The name of the dependency. If array of strings, will check each dependency in the list whether it exists |
 
-<a name="Stage+getDependency"></a>
+<a name="Stage+get"></a>
 
-### stage.getDependency
-Get a dependency that was added via addDependency whether installed or not.
+### stage.get
+Get a dependency that was added via Stage.put whether installed or not.
 
 **Kind**: instance property of [<code>Stage</code>](#Stage)  
 
@@ -496,6 +524,32 @@ Get a dependency that was added via addDependency whether installed or not.
 | --- | --- | --- | --- |
 | name | <code>string</code> \| <code>array.&lt;string&gt;</code> |  | The name of the dependency. If array of strings, will get each dependency in the list, and  return the list of dependencies in that order. |
 | [asContainer] | <code>boolean</code> | <code>false</code> | Return the dependency as a container instead of its proxy cradle. |
+
+<a name="Stage+ifExists"></a>
+
+### stage.ifExists
+If a dependency or dependencies exists, the callback will be called.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> | An array or string of dependencies to call the callback with if they all exist. |
+| cb | <code>function</code> | The first argument of the callback will be the cradle of the dependency, and the second argument will be the stage's cradle. |
+
+<a name="Stage+put"></a>
+
+### stage.put
+Put a dependency to be ready for installation.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Default | Description |
+| --- | --- | --- |
+| [_name] |  | Name of the dependency or just pass the dependency structure here with name part of the interface. |
+| [dependency] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
+| [config] |  | Configuration for the put operation |
+| [config.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
 <a name="Stage+install"></a>
 
