@@ -291,32 +291,52 @@ Actual serializable capabilities is coming soon.
     t.ok(forkedStage.isSerializable, "Checking on stage will check all dependencies.");
     t.ok(funDependency.isSerializable, "Checking on dependency will only check this dependency.");
     const forkedStageSnapshot = forkedStage.snapshot();
-    t.alike(
-        forkedStageSnapshot,
+    {
+        const {fun, chocolate} = forkedStageSnapshot;
         {
-            fun: {
-                id: funDependency.id,
-                name: "fun",
-                code: "export default 'balloons'",
-                uri: undefined,
-                exports: [],
-                optional: false,
-                validator: undefined,
-                npmSpecifier: undefined
-            },
-            chocolate: {
-                id: chocolateDependency.id,
-                name: "chocolate",
-                code: "export default 'with peanut butter'",
-                uri: undefined,
-                exports: [],
-                optional: false,
-                validator: undefined,
-                npmSpecifier: undefined
-            }
-        },
-        "Object serialized."
-    );
+            const {
+                id,
+                name,
+                code,
+                uri,
+                exports,
+                optional,
+                validator,
+                npmSpecifier
+            } = fun;
+
+            t.is(id, funDependency.id);
+            t.is(name, "fun");
+            t.is(code, "export default 'balloons'");
+            t.is(uri, undefined);
+            t.alike(exports, []);
+            t.is(optional, false);
+            t.is(validator, undefined);
+            t.is(npmSpecifier, undefined);
+        }
+
+        {
+            const {
+                id,
+                name,
+                code,
+                uri,
+                exports,
+                optional,
+                validator,
+                npmSpecifier
+            } = chocolate;
+
+            t.is(id, chocolateDependency.id);
+            t.is(name, "chocolate");
+            t.is(code, "export default 'with peanut butter'");
+            t.is(uri, undefined);
+            t.alike(exports, []);
+            t.is(optional, false);
+            t.is(validator, undefined);
+            t.is(npmSpecifier, undefined);
+        }
+    }
 
     const forkFromForkedStageSnapshot = stage.fork(forkedStageSnapshot);
 
@@ -346,21 +366,25 @@ Actual serializable capabilities is coming soon.
     await chocolateDependency.install(false);
     t.ok(chocolateDependency.isSerializable);
     const chocolateSnapshot = chocolateDependency.snapshot();
-    t.alike(
-        chocolateSnapshot,
-        {
-            id: chocolateDependency.id,
-            name: "chocolate",
-            code: "export default 'with marshmallow'",
-            uri: undefined,
-            exports: [],
-            optional: false,
-            validator: undefined,
-            npmSpecifier: undefined
-        },
-        "Even after installation and the module is part of the chocolate dependency, it is still serializable" +
-        " and can create a snap shot from it.."
-    );
+
+    {
+        const {
+            id,
+            name,
+            code,
+            exports,
+            optional
+        } = chocolateSnapshot;
+
+        t.comment("Even after installation and the module is part of the chocolate dependency, it is still serializable" +
+            " and can create a snap shot from it..")
+
+        t.is(id, chocolateDependency.id);
+        t.is(name, "chocolate");
+        t.is(code, "export default 'with marshmallow'");
+        t.alike(exports, []);
+        t.is(optional, false);
+    }
 
     await forkedStage.dispose();
     await funDependency.dispose();
