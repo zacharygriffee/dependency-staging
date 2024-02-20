@@ -41,12 +41,12 @@ test("Dependency tests #1", async t => {
         const theAnswerAfterInstallation = forkedStage.getDependency("the-answer");
         t_install.is(theAnswerAfterInstallation.module, 42, `After installation occurs, the module exists.`);
         t_install.is(theAnswerAfterInstallation.code, "export default 42;", "code is set through addDependency.");
-
-        t_install.exception(() =>
-                forkedStage.addDependency({
-                    name: "the-answer",
-                    code: "export default 24;"
-                }),
+        await t_install.exception(
+            () => forkedStage.addDependency({
+                name: "the-answer",
+                code: "export default 24;"
+            })
+            ,
             "Cannot add over top dependency if installed"
         );
 
@@ -94,27 +94,32 @@ test("Dependency tests #1", async t => {
 test("Dependency forks, validation", async t => {
     const parentFork = stage.fork();
 
-    const hotSauceDependency = parentFork.addDependency({
+    const hotSauceDependencySnapshot = {
         name: "hot-sauce",
         eq: {
             resolver: () => "mustard",
             lifetime: "transient"
         },
-        validator: ({name, eq}) => name === eq,
+        validator: `name === eq;`,
         module: theAnswer,
-    });
+    };
 
-    await t.exception(() => parentFork.install(), "Validation failed exception");
+    let hotSauceDependency = parentFork.addDependency(hotSauceDependencySnapshot);
+
+    await t.exception(() => parentFork.install());
+
     t.absent(hotSauceDependency.installed && hotSauceDependency.module, "installation didn't occur for the dependency.");
 
-    hotSauceDependency.container.register({
-        eq: {
-            resolver: () => "hot-sauce",
-            lifetime: "transient"
-        }
-    });
+    t.comment(`The dependency is immediately disposed and removed from stage if it causes error and cannot be validated. It is
+    necessary to add the dependency again with the correction. It is best to just get everything correct the first time.`)
+    hotSauceDependencySnapshot.eq = {
+        resolver: () => "hot-sauce",
+        lifetime: "transient"
+    };
+
+    hotSauceDependency = parentFork.addDependency(hotSauceDependencySnapshot)
     await parentFork.install();
-    t.is(hotSauceDependency.installed && hotSauceDependency.module, 42, "But we can register the variable of the dependency that will cause the validator to succeed.");
+    t.is(hotSauceDependency.installed && hotSauceDependency.module, 42, "");
 
     t.comment("Creating two fork stages from the parent stage");
     const childFork1 = parentFork.fork();
@@ -137,17 +142,17 @@ test("Dependency forks, validation", async t => {
 
     t.comment("Adding chocolate dependency to childFork1");
 
-    const chocolateDependency = childFork1.addDependency({
+    childFork1.addDependency({
         name: "chocolate",
         code: "export default 'ice cream';",
-        validator: true
+        validator: () => true
     });
 
     t.comment("Adding barbeque dependency to childFork2");
     childFork2.addDependency({
         name: "barbeque",
         code: "export default 'spicy barbeque';",
-        validator: true
+        validator: () => true
     });
 
 
@@ -179,7 +184,9 @@ test("Dependency forks, validation", async t => {
     parentFork.addDependency({
         name: "onion rings",
         code: "export default 'with spicy ranch';",
-        validator: true
+        validator: () => {
+            return module === "with spicy ranch";
+        }
     });
 
     await parentFork.install();
@@ -211,7 +218,7 @@ test("Dependency forks, validation", async t => {
     t.absent(child1HotSauce, "Hot sauce is gone.");
 
     t.comment("Disposing parentFork");
-    t.is(stage.forks.length + stage.forks[0].id, stage.forks.length + parentFork.id,  "Before disposing, stage.forks should have parent fork as its only entry.");
+    t.is(stage.forks.length + stage.forks[0].id, stage.forks.length + parentFork.id, "Before disposing, stage.forks should have parent fork as its only entry.");
     await parentFork.container.dispose();
     t.alike(stage.forks, [], "At this point, root stage has no dependencies because parentFork was its only one.");
     t.absent(
@@ -257,10 +264,12 @@ Actual serializable capabilities is coming soon.
         code: "export default 'with peanut butter'"
     });
 
+
     t.ok(forkedStage.isSerializable, "Checking on stage will check all dependencies.");
     t.ok(funDependency.isSerializable, "Checking on dependency will only check this dependency.");
+    const forkedStageSnapshot = forkedStage.snapshot();
     t.alike(
-        forkedStage.snapshot(),
+        forkedStageSnapshot,
         {
             fun: {
                 id: funDependency.id,
@@ -268,7 +277,8 @@ Actual serializable capabilities is coming soon.
                 code: "export default 'balloons'",
                 uri: undefined,
                 exports: [],
-                optional: false
+                optional: false,
+                validator: undefined
             },
             chocolate: {
                 id: chocolateDependency.id,
@@ -276,11 +286,22 @@ Actual serializable capabilities is coming soon.
                 code: "export default 'with peanut butter'",
                 uri: undefined,
                 exports: [],
-                optional: false
+                optional: false,
+                validator: undefined
             }
         },
         "Object serialized."
     );
+
+    const forkFromForkedStageSnapshot = stage.fork(forkedStageSnapshot);
+
+    t.alike(
+        forkFromForkedStageSnapshot.getDependency(["fun", "chocolate"]).map(o => o.id),
+        [funDependency.id, chocolateDependency.id],
+        "a stage forked from a snapshot will attain the snapshot dependencies including validations."
+    );
+
+    await forkFromForkedStageSnapshot.dispose();
 
     funDependency = forkedStage.addDependency({
         name: "fun",
@@ -299,16 +320,17 @@ Actual serializable capabilities is coming soon.
 
     await chocolateDependency.install(false);
     t.ok(chocolateDependency.isSerializable);
-    const choco = chocolateDependency.snapshot();
+    const chocolateSnapshot = chocolateDependency.snapshot();
     t.alike(
-        choco,
+        chocolateSnapshot,
         {
             id: chocolateDependency.id,
             name: "chocolate",
             code: "export default 'with marshmallow'",
             uri: undefined,
             exports: [],
-            optional: false
+            optional: false,
+            validator: undefined
         },
         "Even after installation and the module is part of the chocolate dependency, it is still serializable" +
         " and can create a snap shot from it.."
@@ -318,11 +340,78 @@ Actual serializable capabilities is coming soon.
     await funDependency.dispose();
     await chocolateDependency.dispose();
     await stage.dispose();
+
+    const otherForkedStage = stage.fork();
+    otherForkedStage.addDependency(chocolateSnapshot);
+    await otherForkedStage.install(false);
+    const {id: originalId} = chocolateDependency;
+    const {module, id: snapshotId, valid} = otherForkedStage.getDependency("chocolate");
+
+    t.is(module, "with marshmallow", "addDependency from snapshot worked.");
+    t.is(originalId, snapshotId, "The snapshot and original has the same ID");
+    t.absent(valid, "Because we installed validationRequired=false, the dependency valid property will be false");
+
+    otherForkedStage.addDependency({
+        name: "strawberry",
+        code: "export default 'shortcake';",
+        validator: "module === 'shortcake'"
+    });
+
+    const {strawberry} = otherForkedStage.snapshot();
+    t.is(strawberry.validator, "module === 'shortcake'", `Validator gets serialized with the snapshot. However, if a stage snapshot has a dependency 
+    that doesn't have a validator and another that does, you have to install the snapshot without validation.`);
+    const anotherForkedStage = stage.fork();
+
+    anotherForkedStage.addDependency({
+        ...strawberry,
+        validator: "module === 'shortcake';"
+    });
+    await anotherForkedStage.install();
+    const strawberryDependency = anotherForkedStage.getDependency("strawberry");
+    t.ok(await strawberryDependency.valid, "We installed strawberry with validationRequired=true and had a serializable validator to validate");
+
+    await otherForkedStage.dispose();
+    await anotherForkedStage.dispose();
+    await stage.dispose();
+});
+
+test("Validator", async t => {
+    const forkedStage = stage.fork();
+    forkedStage.addDependency({
+        name: "the-answer",
+        code: "export default 42;",
+        validator: "module !== 42"
+    });
+
+    await t.exception(forkedStage.install, "validator failed the install");
+
+    const theAnswerDep = forkedStage.addDependency({
+        name: "the-answer",
+        code: "export default 42;",
+        validator: "module === 42"
+    });
+
+    await forkedStage.install();
+
+    t.ok(forkedStage.getDependency("the-answer").installed, "updated validator succeeded the install");
+    t.ok(await forkedStage.getDependency("the-answer").valid, "The validation is successful");
+
+    await theAnswerDep.dispose();
+
+    forkedStage.addDependency({
+        name: "the-answer",
+        code: "export default 'forty two';",
+        validator: "module === 'forty two';"
+    });
+
+    await forkedStage.install();
+
+    t.ok(await forkedStage.getDependency("the-answer").valid, "The validation is successful");
+    await stage.dispose();
 });
 
 test("Alien vs Aircraft carrier (alien forks)", async t => {
     t.comment("Alien forks are forks from other libraries that use the dependency-staging library");
-
     alien.addDependency(motherShipData);
     stage.addDependency(airCraftCarrierData)
 
@@ -344,7 +433,11 @@ test("Alien vs Aircraft carrier (alien forks)", async t => {
     let whenDestroyed = new Promise(resolve => setDestroyed = resolve);
     let destroyed = 0;
     let record = {};
-    console.log(`${(await battle()).name} %cdestroyed`, "background-color: red; color:black; font-weight: bold");
+    try {
+        console.log(`${(await battle()).name} %cdestroyed`, "background-color: red; color:black; font-weight: bold");
+    } catch (e) {
+        debugger;
+    }
     console.table(record);
     t.is(
         alien.dependencies["aircraft carrier"].cradle.health.hitpoints,
@@ -357,15 +450,20 @@ test("Alien vs Aircraft carrier (alien forks)", async t => {
 
     await stage.dispose();
     t.alike(stage.dependencies, {}, "stage dependencies don't have aircraft carrier anymore, due to being disposed.");
-    t.alike(alien.dependencies, {["aircraft carrier"]: aircraftCarrier.container, mothership: motherShip.container}, "But the alien stage still has references to both ships.");
+    t.alike(alien.dependencies, {
+        ["aircraft carrier"]: aircraftCarrier.container,
+        mothership: motherShip.container
+    }, "But the alien stage still has references to both ships.");
 
     alien.fork();
     stage.merge(alien);
-    t.alike(stage.dependencies, {["aircraft carrier"]: aircraftCarrier.container, mothership: motherShip.container}, "We can merge alien back into stage and have the dependencies again.");
+    t.alike(stage.dependencies, {
+        ["aircraft carrier"]: aircraftCarrier.container,
+        mothership: motherShip.container
+    }, "We can merge alien back into stage and have the dependencies again.");
 
     await stage.dispose(stage);
     await alien.dispose(stage);
-
 
     function battle() {
         [
@@ -534,3 +632,4 @@ ${
             export const nuclear = _nuclear();
         `
 };
+
