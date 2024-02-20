@@ -1,5 +1,4 @@
 import {test, solo, skip} from "brittle";
-import {pack, rollupFromJsdelivr, rollupVirtualPlugin} from "bring-your-own-storage-utilities/deploy";
 import theAnswer from "the-answer";
 // Creates a singleton stage.
 import {stage} from "./index.js";
@@ -89,6 +88,30 @@ test("Dependency tests #1", async t => {
         await stage.container.dispose();
     }
 
+});
+
+test("npm resolution", async t => {
+    const parentFork = stage.fork();
+
+    parentFork.addDependency({
+        name: "the-answer",
+        npmSpecifier: "the-answer",
+        validator() {
+            return module === 42
+        }
+    });
+    await parentFork.install();
+    const {module} = parentFork.getDependency("the-answer");
+    t.is(module, 42, `
+    If ran in node, will get the-answer from node_modules of this module. If you run this
+    in node and get an error, make sure you have the-answer installed as dev
+    If ran in browser, will get the npm specifier from jsdelivr or whatever choice of cdn you want
+    if you set the npmCdnResolver resolver of the stage container. You can also set the npmCdnResolver
+    for each individual dependency if it's necessary. Like if you have your own CDN with your own module
+    resolution algorithm.
+    `);
+
+    parentFork.dispose();
 });
 
 test("Dependency forks, validation", async t => {
@@ -364,7 +387,7 @@ Actual serializable capabilities is coming soon.
 
     anotherForkedStage.addDependency({
         ...strawberry,
-        validator: "module === 'shortcake';"
+        validator: "module === 'shortcake'"
     });
     await anotherForkedStage.install();
     const strawberryDependency = anotherForkedStage.getDependency("strawberry");
