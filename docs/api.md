@@ -33,21 +33,42 @@ A dependency container
 | module | <code>object</code> |  | When installed, module will be the installed module. |
 | [code] | <code>string</code> |  | The code of a module. When the dependency is installed, the code will be transformed into a data uri, imported, and validated. |
 | [uri] | <code>string</code> |  | A data uri of a module. |
+| [npmSpecifier] | <code>string</code> |  | A bare specifier. The specifier should work on both node and the browser resolver defined at [Stage.npmCdnResolver](Stage.npmCdnResolver) and [Dependency.npmCdnResolver](Dependency.npmCdnResolver) |
 | [exports] | <code>array.&lt;string&gt;</code> |  | Export these export names from the module. If empty, will export all. |
 | valid | <code>boolean</code> |  | If this dependency succeeded it's validator. Validation occurs at the dependency installation. Otherwise, this will be false. If this dependency is installed with validationRequired=false either by stage.install, stage.installDependency, or dependency.install, this will be false. |
 
 
 * [Dependency](#Dependency) : <code>container</code>
+    * [.npmCdnResolver](#Dependency+npmCdnResolver)
     * [.install](#Dependency+install) ⇒
     * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
     * [.validator](#Dependency+validator) ⇒ <code>Promise.&lt;boolean&gt;</code>
 
+<a name="Dependency+npmCdnResolver"></a>
+
+### dependency.npmCdnResolver
+Define how an npmSpecifier is resolved at the dependency level. This will override Stage.npmCdnResolver.
+
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+install"></a>
 
 ### dependency.install ⇒
-Install the single dependency without it becoming a dependency to a stage.
+Install the single dependency without it becoming a dependency to a stage. This is also used by
+[Stage.install](Stage.install) to install dependencies to itself.
+
+The process of the installation goes like this:
+
+- Check if module is defined, if so, this will take precedence over all other below.
+- if Dependency.npmSpecifier && node: will check if the npmSpecifier can be imported via node_modules.
+- if Dependency.npmSpecifier && browser: will utilize npmCdnResolver resolver to attempt to get the specifier from it.
+- if Dependency.code: turn it into an uri and add to importSources
+- if Dependency.uri (application/javascript): add to importSources
+- Then if any other importSources were added, they will be attempted after this.
+
+The importSources should strive to be as environmentally agnostic and serializable possible. Or at least have
+a importSource for the environments the dependencies should support.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 **Returns**: Dependency  
@@ -140,6 +161,7 @@ the dependencies.
     * [.isSerializable](#Stage+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.merge](#Stage+merge)
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
+    * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
     * [.addDependency](#Stage+addDependency)
     * [.getDependency](#Stage+getDependency)
@@ -178,7 +200,16 @@ will become installed in this stage. Another stage being disposed will not dispo
 <a name="Stage+snapshot"></a>
 
 ### stage.snapshot ⇒ <code>object</code>
-Create snapshot of the dependencies the stage directly handles (not forks).
+Create snapshot of the dependencies the stage directly handles (not forks). You can rehydrate the
+stage's snapshot in the 'stage.fork' function. Currently and it is not planned to cannot create an `alien stage`
+from a snapshot.
+
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+npmCdnResolver"></a>
+
+### stage.npmCdnResolver
+Define how an npmSpecifier is resolved if being resolved from a browser or environment that supports
+module import from url. This will apply to all dependencies of this stage.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+dispose"></a>
@@ -197,7 +228,7 @@ Add a dependency to be ready for installation.
 
 | Param | Default | Description |
 | --- | --- | --- |
-| [dependencyInterface] |  | The |
+| [dependencyInterface] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
 <a name="Stage+getDependency"></a>
@@ -276,16 +307,36 @@ A Container that resolves and contains dependency.
 **Kind**: global namespace  
 
 * [Dependency](#Dependency) : <code>object</code>
+    * [.npmCdnResolver](#Dependency+npmCdnResolver)
     * [.install](#Dependency+install) ⇒
     * [.isSerializable](#Dependency+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.snapshot](#Dependency+snapshot)
     * [.dispose](#Dependency+dispose)
     * [.validator](#Dependency+validator) ⇒ <code>Promise.&lt;boolean&gt;</code>
 
+<a name="Dependency+npmCdnResolver"></a>
+
+### dependency.npmCdnResolver
+Define how an npmSpecifier is resolved at the dependency level. This will override Stage.npmCdnResolver.
+
+**Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 <a name="Dependency+install"></a>
 
 ### dependency.install ⇒
-Install the single dependency without it becoming a dependency to a stage.
+Install the single dependency without it becoming a dependency to a stage. This is also used by
+[Stage.install](Stage.install) to install dependencies to itself.
+
+The process of the installation goes like this:
+
+- Check if module is defined, if so, this will take precedence over all other below.
+- if Dependency.npmSpecifier && node: will check if the npmSpecifier can be imported via node_modules.
+- if Dependency.npmSpecifier && browser: will utilize npmCdnResolver resolver to attempt to get the specifier from it.
+- if Dependency.code: turn it into an uri and add to importSources
+- if Dependency.uri (application/javascript): add to importSources
+- Then if any other importSources were added, they will be attempted after this.
+
+The importSources should strive to be as environmentally agnostic and serializable possible. Or at least have
+a importSource for the environments the dependencies should support.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
 **Returns**: Dependency  
@@ -364,6 +415,7 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
     * [.isSerializable](#Stage+isSerializable) ⇒ <code>boolean</code> \| <code>undefined</code>
     * [.merge](#Stage+merge)
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
+    * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
     * [.addDependency](#Stage+addDependency)
     * [.getDependency](#Stage+getDependency)
@@ -402,7 +454,16 @@ will become installed in this stage. Another stage being disposed will not dispo
 <a name="Stage+snapshot"></a>
 
 ### stage.snapshot ⇒ <code>object</code>
-Create snapshot of the dependencies the stage directly handles (not forks).
+Create snapshot of the dependencies the stage directly handles (not forks). You can rehydrate the
+stage's snapshot in the 'stage.fork' function. Currently and it is not planned to cannot create an `alien stage`
+from a snapshot.
+
+**Kind**: instance method of [<code>Stage</code>](#Stage)  
+<a name="Stage+npmCdnResolver"></a>
+
+### stage.npmCdnResolver
+Define how an npmSpecifier is resolved if being resolved from a browser or environment that supports
+module import from url. This will apply to all dependencies of this stage.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 <a name="Stage+dispose"></a>
@@ -421,7 +482,7 @@ Add a dependency to be ready for installation.
 
 | Param | Default | Description |
 | --- | --- | --- |
-| [dependencyInterface] |  | The |
+| [dependencyInterface] |  | The dependency structure, see Dependency container. You may also supply an array of dependency structures for multiple dependencies. |
 | [dependencyInterface.reinstall] | <code>false</code> | If the dependency is already installed, this will cause the dependency to reinstall itself if set to true. |
 
 <a name="Stage+getDependency"></a>
