@@ -1,7 +1,7 @@
 import {test, solo, skip} from "brittle";
 import theAnswer from "the-answer";
 // Creates a singleton stage.
-import {stage} from "./index.js";
+import {stage, Premade} from "./index.js";
 // A trick to get an instance to test 'alien stages' from other libraries
 import {stage as alien} from "./dist/index.min.js";
 
@@ -145,6 +145,30 @@ test("Features | Optional", async t => {
 
     parentFork.dispose();
 });
+
+test("premade dependencies BASIC", async t => {
+    t.comment(`
+        If ran in browser, the dependencies will first check the import map and then will use npmCdnResolver function
+        that can be changed via container.register on the stage or on individual dependencies.
+        compact-encoding is not in the test.html import map. But b4a is.
+        
+        IF ran in nodejs, the dependencies must be present in the node_modules for the typical import 
+        resolution to work. Support for url's in nodejs is planned but it would be as an addon because
+        such support would bloat the repo.
+    `);
+    const fork = stage.fork();
+    await fork.put(Premade.Basic);
+    await fork.install();
+    const [b4a, cenc] = fork.execute(["b4a", "compact-encoding"]);
+    t.ok(b4a.isBuffer(b4a.from("hello")));
+    const buff = cenc.encode(cenc.json, {hello: "world"});
+    t.ok(b4a.isBuffer(buff));
+    const back = cenc.decode(cenc.json, buff);
+    t.alike(back, {hello: "world"});
+    await fork.dispose();
+});
+
+
 
 test("npm resolution", async t => {
     const parentFork = stage.fork();

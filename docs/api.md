@@ -10,6 +10,12 @@ How to configure a container and its resolvers see: <a href="https://github.com/
 <dt><a href="#Dependency">Dependency</a> : <code>object</code></dt>
 <dd><p>A Container that resolves and contains dependency.</p>
 </dd>
+<dt><a href="#Premade">Premade</a> : <code>object</code></dt>
+<dd><p>Premade dependencies that can be added to your stages.
+If you are running in node, all dependencies should be present in node_modules.
+If you are in browser, add them to import map or else it will be imported
+via the Stage.npmCdnResolver</p>
+</dd>
 <dt><a href="#Stage">Stage</a> : <code>object</code></dt>
 <dd><p>A Stage is a Container that holds dependencies and specialized resolvers for the stage that relies on</p>
 </dd>
@@ -62,6 +68,7 @@ The process of the installation goes like this:
 
 - Check if module is defined, if so, this will take precedence over all other below.
 - if Dependency.npmSpecifier && node: will check if the npmSpecifier can be imported via node_modules.
+- if Dependency.npmSpecifier && browser will check importMap if it includes this specifier,
 - if Dependency.npmSpecifier && browser: will utilize npmCdnResolver resolver to attempt to get the specifier from it.
 - if Dependency.code: turn it into an uri and add to importSources
 - if Dependency.uri (application/javascript): add to importSources
@@ -163,6 +170,7 @@ the dependencies.
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
+    * [.Execute](#Stage+Execute)
     * [.exists](#Stage+exists)
     * [.get](#Stage+get)
     * [.ifExists](#Stage+ifExists)
@@ -221,6 +229,17 @@ An alias function for the container's dispose function.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
+<a name="Stage+Execute"></a>
+
+### stage.Execute
+Get a dependency's module that has already been validated and installed.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> | The name of the dependency. If array of strings, will return the module of each dependency. If the dependency is not installed, this function will throw DependencyIsNotInstalled error. |
+
 <a name="Stage+exists"></a>
 
 ### stage.exists
@@ -357,6 +376,7 @@ The process of the installation goes like this:
 
 - Check if module is defined, if so, this will take precedence over all other below.
 - if Dependency.npmSpecifier && node: will check if the npmSpecifier can be imported via node_modules.
+- if Dependency.npmSpecifier && browser will check importMap if it includes this specifier,
 - if Dependency.npmSpecifier && browser: will utilize npmCdnResolver resolver to attempt to get the specifier from it.
 - if Dependency.code: turn it into an uri and add to importSources
 - if Dependency.uri (application/javascript): add to importSources
@@ -430,6 +450,64 @@ stage.addDependency({
     validator: "module === 'some module stuff'"
 });
 ```
+<a name="Premade"></a>
+
+## Premade : <code>object</code>
+Premade dependencies that can be added to your stages.
+If you are running in node, all dependencies should be present in node_modules.
+If you are in browser, add them to import map or else it will be imported
+via the Stage.npmCdnResolver
+
+**Kind**: global namespace  
+**Example**  
+```js
+import {stage, Premade} from "dependency-staging";
+stage.put(Premade);
+await stage.install();
+```
+
+* [Premade](#Premade) : <code>object</code>
+    * [.Basic](#Premade.Basic) : <code>object</code>
+        * [.b4a](#Premade.Basic.b4a)
+        * [.compactEncoding](#Premade.Basic.compactEncoding)
+
+<a name="Premade.Basic"></a>
+
+### Premade.Basic : <code>object</code>
+A set of basic dependencies that I personally use in almost every project
+
+**Kind**: static namespace of [<code>Premade</code>](#Premade)  
+**Example**  
+```js
+stage.put(Premade.Basic);
+```
+
+* [.Basic](#Premade.Basic) : <code>object</code>
+    * [.b4a](#Premade.Basic.b4a)
+    * [.compactEncoding](#Premade.Basic.compactEncoding)
+
+<a name="Premade.Basic.b4a"></a>
+
+#### Basic.b4a
+Buffer handling
+
+**Kind**: static property of [<code>Basic</code>](#Premade.Basic)  
+**See**: https://github.com/holepunchto/b4a  
+**Example**  
+```js
+stage.put(Premade.Basic.b4a);
+```
+<a name="Premade.Basic.compactEncoding"></a>
+
+#### Basic.compactEncoding
+Handling encoding to and from buffers in a compact way.
+
+**Kind**: static property of [<code>Basic</code>](#Premade.Basic)  
+**See**: https://github.com/holepunchto/compact-encoding  
+**Example**  
+```js
+stage.put(Premade.Basic.compactEncoding);
+```
 <a name="Stage"></a>
 
 ## Stage : <code>object</code>
@@ -444,6 +522,7 @@ A Stage is a Container that holds dependencies and specialized resolvers for the
     * [.snapshot](#Stage+snapshot) ⇒ <code>object</code>
     * [.npmCdnResolver](#Stage+npmCdnResolver)
     * [.dispose](#Stage+dispose) ⇒
+    * [.Execute](#Stage+Execute)
     * [.exists](#Stage+exists)
     * [.get](#Stage+get)
     * [.ifExists](#Stage+ifExists)
@@ -502,6 +581,17 @@ An alias function for the container's dispose function.
 
 **Kind**: instance method of [<code>Stage</code>](#Stage)  
 **Returns**: Promise<void>  
+<a name="Stage+Execute"></a>
+
+### stage.Execute
+Get a dependency's module that has already been validated and installed.
+
+**Kind**: instance property of [<code>Stage</code>](#Stage)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> \| <code>array.&lt;string&gt;</code> | The name of the dependency. If array of strings, will return the module of each dependency. If the dependency is not installed, this function will throw DependencyIsNotInstalled error. |
+
 <a name="Stage+exists"></a>
 
 ### stage.exists
