@@ -301,7 +301,8 @@ Actual serializable capabilities is coming soon.
                 uri: undefined,
                 exports: [],
                 optional: false,
-                validator: undefined
+                validator: undefined,
+                npmSpecifier: undefined
             },
             chocolate: {
                 id: chocolateDependency.id,
@@ -310,7 +311,8 @@ Actual serializable capabilities is coming soon.
                 uri: undefined,
                 exports: [],
                 optional: false,
-                validator: undefined
+                validator: undefined,
+                npmSpecifier: undefined
             }
         },
         "Object serialized."
@@ -353,7 +355,8 @@ Actual serializable capabilities is coming soon.
             uri: undefined,
             exports: [],
             optional: false,
-            validator: undefined
+            validator: undefined,
+            npmSpecifier: undefined
         },
         "Even after installation and the module is part of the chocolate dependency, it is still serializable" +
         " and can create a snap shot from it.."
