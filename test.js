@@ -98,6 +98,54 @@ test("Dependency tests #1", async t => {
 
 });
 
+test("Features | Optional", async t => {
+    const parentFork = stage.fork();
+
+    parentFork.put({
+        name: "optionalDep",
+        optional: true,
+        code: "throw new Error('we throw to test an optional that doesn't run');"
+    });
+
+    await parentFork.install();
+
+    {
+        const {...optional} = parentFork.get("optionalDep");
+        t.is(optional.installed, false, "Did not install, because the code threw error.");
+    }
+
+    parentFork.put("optionalDep", {
+        code: "export default 3+2;",
+        validator: "module === 4;"
+    });
+
+    await parentFork.install();
+    {
+        const {...optional} = parentFork.get("optionalDep");
+        t.is(optional.installed, false, "Did not install, because the code could not be validated.");
+    }
+
+    const optDep = parentFork.put("optionalDep", {
+        validator: "module === 5"
+    });
+
+    await parentFork.install();
+    {
+        const {module} = parentFork.get("optionalDep");
+        t.is(module, 5, "Validator succeeded, the module didn't throw any errors.");
+
+    }
+
+    {
+        await optDep.dispose();
+        const {module, installed} = parentFork.get("optionalDep");
+        t.absent(module, "We disposed the dep, so module should be undefined.");
+        t.is(installed, false, "And installed is false.");
+    }
+
+    parentFork.dispose();
+});
+
 test("npm resolution", async t => {
     const parentFork = stage.fork();
 
