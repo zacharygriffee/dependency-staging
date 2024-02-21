@@ -106,7 +106,7 @@ false
 
 ### dependency.snapshot
 Create a serializable javascript object of the dependency if the dependency is serializable, see
-[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.addDependency which allows you to save the
+[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.put which allows you to save the
 state of the stage and reload it, or transfer the state of the stage over network.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
@@ -136,7 +136,7 @@ All the other properties of this container (i.e. code, uri, exports, container, 
 dependency.container.register({
     validator: "module.isCorrect === true"
 });
-stage.addDependency({
+stage.put({
     name: "someModule",
     code: "export default 'some module stuff'",
     validator: "module === 'some module stuff'"
@@ -322,7 +322,7 @@ Install a single dependency
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| name | <code>string</code> |  | The name of the dependency used when adding it via Stage.addDependency |
+| name | <code>string</code> |  | The name of the dependency used when adding it via Stage.put |
 | [validationRequired] |  | <code>true</code> | If true, all dependencies must have a validator that checks integrity |
 
 <a name="Container"></a>
@@ -414,7 +414,7 @@ false
 
 ### dependency.snapshot
 Create a serializable javascript object of the dependency if the dependency is serializable, see
-[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.addDependency which allows you to save the
+[Dependency.isSerializable](Dependency.isSerializable) Snapshots can be added back into stage.put which allows you to save the
 state of the stage and reload it, or transfer the state of the stage over network.
 
 **Kind**: instance method of [<code>Dependency</code>](#Dependency)  
@@ -444,7 +444,7 @@ All the other properties of this container (i.e. code, uri, exports, container, 
 dependency.container.register({
     validator: "module.isCorrect === true"
 });
-stage.addDependency({
+stage.put({
     name: "someModule",
     code: "export default 'some module stuff'",
     validator: "module === 'some module stuff'"
@@ -674,6 +674,6 @@ Install a single dependency
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| name | <code>string</code> |  | The name of the dependency used when adding it via Stage.addDependency |
+| name | <code>string</code> |  | The name of the dependency used when adding it via Stage.put |
 | [validationRequired] |  | <code>true</code> | If true, all dependencies must have a validator that checks integrity |
 

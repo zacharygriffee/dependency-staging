@@ -1,7 +1,7 @@
 {
   "name": "dependency-staging",
   "type": "module",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "license": "MIT",
   "main": "index.js",
   "browser": "dist/index.min.js",
@@ -33,10 +33,11 @@
     "b4a": "^1.6.6",
     "bring-your-own-storage-utilities": "^0.0.1321",
     "brittle": "^3.4.0",
+    "compact-encoding": "^2.13.0",
     "jsdoc-to-markdown": "^8.0.1",
     "localdrive": "^1.11.4",
     "the-answer": "^1.0.0",
-    "compact-encoding": "^2.13.0"
+    "rxjs": "^7.8.1"
   },
   "dependencies": {
     "awilix": "^10.0.1",
