@@ -1,7 +1,7 @@
 {
   "name": "dependency-staging",
   "type": "module",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "license": "MIT",
   "main": "index.js",
   "browser": "dist/index.min.js",
@@ -12,6 +12,21 @@
     "test": "node ./test.js",
     "bundle": "node ./bundle.js",
     "compile-docs": "node ./compile-docs.js"
+  },
+  "exports": {
+    ".": {
+      "default": "./index.js",
+      "browser": "./dist/index.min.js"
+    },
+    "./premade": {
+      "default": "./lib/premade/index.js"
+    },
+    "./premade/basic": {
+      "default": "./lib/premade/basic.js"
+    },
+    "./test": {
+      "default": "./test.js"
+    }
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",

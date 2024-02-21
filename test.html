@@ -11,7 +11,9 @@
                 "brittle": "https://ga.jspm.io/npm:brittle@3.3.2/index.js",
                 "the-answer": "https://esm.run/the-answer",
                 "simplified-awilix": "https://cdn.jsdelivr.net/npm/simplified-awilix@0.2.7/dist/index.min.js",
-                "b4a": "https://esm.run/b4a"
+                "b4a": "https://esm.run/b4a",
+                "dependency-staging/premade": "./lib/premade/index.js",
+                "TEST" : "./test.js"
             },
             "scopes": {
               "https://ga.jspm.io/": {
@@ -31,39 +33,13 @@
 <script type="module">
     import {solo, test, skip} from "brittle";
 
-    await import("./test.js");
+    await import("TEST");
 
     test("Test Complete", async t => {
         const [bodyEle] = document.getElementsByTagName("body");
         bodyEle.style.backgroundColor = "green";
         t.pass();
     });
-
-    function random(len) {
-        return Math.floor(Math.random() * len)
-    }
-
-    function makeid(length) {
-        let result = '';
-        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const charactersLength = characters.length;
-        let counter = 0;
-        while (counter < length) {
-            result += characters.charAt(Math.floor(Math.random() * charactersLength));
-            counter += 1;
-        }
-        return result;
-    }
-
-    function promisify(o, m, ...args) {
-        const p = new Promise((resolve, reject) => {
-            args.push((e, o) => {
-                e ? reject(e) : resolve(o);
-            });
-        });
-        o[m](...args);
-        return p;
-    }
 </script>
 
 <h1>Testing</h1>

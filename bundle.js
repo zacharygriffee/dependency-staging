@@ -9,3 +9,5 @@ await pack("./index.js", "./dist/index.min.js", {
         terser()
     ]
 });
+
+

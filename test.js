@@ -1,7 +1,8 @@
 import {test, solo, skip} from "brittle";
 import theAnswer from "the-answer";
 // Creates a singleton stage.
-import {stage, Premade} from "./index.js";
+import {stage} from "./index.js";
+import Premade, {Basic} from "dependency-staging/premade";
 // A trick to get an instance to test 'alien stages' from other libraries
 import {stage as alien} from "./dist/index.min.js";
 
@@ -157,7 +158,7 @@ test("premade dependencies BASIC", async t => {
         such support would bloat the repo.
     `);
     const fork = stage.fork();
-    await fork.put(Premade.Basic);
+    await fork.put(Basic);
     await fork.install();
     const [b4a, cenc] = fork.execute(["b4a", "compact-encoding"]);
     t.ok(b4a.isBuffer(b4a.from("hello")));
