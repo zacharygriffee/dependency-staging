@@ -17,7 +17,7 @@ How to configure a container and its resolvers see: [SimplifiedAwilix](https://g
 import {stage} from "dependency-staging"
 
 // You can register your own resolvers here.
-stage.registerSingleton({
+stage.container.registerSingleton({
     appVersion: "1.0.1"
 });
 ```
