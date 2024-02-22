@@ -1,7 +1,7 @@
 {
   "name": "dependency-staging",
   "type": "module",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "license": "MIT",
   "main": "index.js",
   "browser": "dist/index.min.js",
@@ -23,6 +23,9 @@
     },
     "./premade/basic": {
       "default": "./lib/premade/basic.js"
+    },
+    "./premade/rx": {
+      "default": "./lib/premade/rx.js"
     },
     "./test": {
       "default": "./test.js"

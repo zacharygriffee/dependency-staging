@@ -2,9 +2,10 @@ import {test, solo, skip} from "brittle";
 import theAnswer from "the-answer";
 // Creates a singleton stage.
 import {stage} from "./index.js";
-import Premade, {Basic} from "dependency-staging/premade";
+
 // A trick to get an instance to test 'alien stages' from other libraries
 import {stage as alien} from "./dist/index.min.js";
+import {clearObject} from "./lib/util/clearObject.js";
 
 test("Dependency tests #1", async t => {
     const forkedStage = stage.fork();
@@ -147,7 +148,38 @@ test("Features | Optional", async t => {
     parentFork.dispose();
 });
 
+test("Stage.wand", async t => {
+    const parentFork = stage.fork();
+
+    parentFork.put({
+        name: "theAnswer",
+        npmSpecifier: "the-answer",
+        validator() { return module === 42; }
+    });
+
+    parentFork.put({
+        name: "notTheAnswer",
+        module: 24,
+        validator() { return module !== 42; }
+    })
+
+    await parentFork.install();
+    const {wand} = parentFork;
+
+    t.is(wand.theAnswer, 42);
+    t.is(wand.notTheAnswer, 24);
+
+    wand.chocolate = { module: "iceCream", validator: "module === 'iceCream'" };
+
+    await parentFork.install();
+
+    t.is(wand.chocolate, "iceCream");
+
+    await parentFork.dispose();
+});
+
 test("premade dependencies BASIC", async t => {
+    const {default: basic} = await import("dependency-staging/premade/basic");
     t.comment(`
         If ran in browser, the dependencies will first check the import map and then will use npmCdnResolver function
         that can be changed via container.register on the stage or on individual dependencies.
@@ -158,7 +190,7 @@ test("premade dependencies BASIC", async t => {
         such support would bloat the repo.
     `);
     const fork = stage.fork();
-    await fork.put(Basic);
+    await fork.put(basic);
     await fork.install();
     const [b4a, cenc] = fork.execute(["b4a", "compact-encoding"]);
     t.ok(b4a.isBuffer(b4a.from("hello")));
@@ -169,7 +201,24 @@ test("premade dependencies BASIC", async t => {
     await fork.dispose();
 });
 
+test("premade dependencies rxjs", async t => {
+    await import("dependency-staging/premade/rx");
+    const {rx} = stage;
+    const arr = [];
+    rx.of("rxjs", "wired", "up").subscribe(o => arr.push(o));
+    t.alike(arr, ["rxjs", "wired", "up"], "root stage has rxjs");
+    const forkedStage = stage.fork();
 
+    arr.length = 0;
+    forkedStage.rx.of("rxjs", "wired", "up", "in fork").subscribe(o => arr.push(o));
+    t.alike(arr, ["rxjs", "wired", "up", "in fork"], "All forks have rxjs");
+
+    const operators = forkedStage.execute("rxjs.operators");
+    t.ok(Object.keys(operators).includes("concatMap"), "if you need to access or convey operators to a dependency");
+    const observables = forkedStage.execute("rxjs.observables");
+    t.ok(Object.keys(observables).includes("concat"), "if you need to access or convey observables to a dependency");
+    await forkedStage.dispose();
+});
 
 test("npm resolution", async t => {
     const parentFork = stage.fork();

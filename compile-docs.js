@@ -10,15 +10,17 @@ const __dirname = path.dirname(p);
 const projectFolder = new LocalDrive(path.resolve(__dirname, "./"));
 
 try {
-        await jsdoc2md.render({files: "./lib/**/*.js"}).then(
+    for await (const lib of ["container", "dependency", "stage", "premade"]) {
+        await jsdoc2md.render({files: `lib/${lib}/**/*.js`}).then(
             data => {
                 data = `
-### Dependency Staging API
+# ${lib.toUpperCase()} API
+
 ${data}`;
-                return projectFolder.put(`./docs/api.md`, b4a.from(data));
+                return projectFolder.put(`./docs/${lib}-api.md`, b4a.from(data));
             }
         );
-
+    }
     console.log("Docs created.");
 } catch (e) {
     console.error(e);
